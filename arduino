@@ -1,0 +1,87 @@
+
+#include <Wire.h>
+#include <Adafruit_MotorShield.h>
+#include "utility/Adafruit_MS_PWMServoDriver.h"
+
+
+Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
+ 
+// Select which 'port' M1, M2, M3 or M4. In this case, M1
+Adafruit_DCMotor *rightMotor = AFMS.getMotor(1);
+Adafruit_DCMotor *leftMotor = AFMS.getMotor(4);
+// You can also make another motor on port M2
+//Adafruit_DCMotor *myOtherMotor = AFMS.getMotor(2);
+
+const int trigPin = 9;
+const int echoPin = 10;
+
+int x=1;
+
+void setup() {
+   AFMS.begin();
+   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+}
+//instead of myMotor, we generalise with motor
+void move_motor(Adafruit_DCMotor *motor,int direction){
+  set_speed(motor, 200);
+  motor->run(direction);
+}
+
+void set_speed(Adafruit_DCMotor *motor ,int speed){
+   motor->setSpeed(speed);
+}
+ 
+void motor_turn_left(){
+  move_motor(rightMotor,FORWARD);
+  move_motor(leftMotor,BACKWARD);
+  delay(1000);
+}
+//less code code with fuction
+void motor_forward(){
+  move_motor(rightMotor,FORWARD);
+  move_motor(leftMotor,FORWARD);
+  delay(1000);
+  
+}
+int get_distance() {
+    long duration;
+    int distance;
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    // Sets the trigPin on HIGH state for 10 micro seconds
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    // Reads the echoPin, returns the sound wave travel time in microseconds
+    duration = pulseIn(echoPin, HIGH);
+    // Calculating the distance
+    distance= duration*0.034/2;
+    
+    return distance;
+
+
+}
+
+void loopx_sample() {
+  x=x+1;
+  if (x<5){
+    motor_forward();
+    motor_turn_left();
+  } else{
+     set_speed(rightMotor, 0);
+     set_speed(leftMotor, 0);
+   }
+   
+}
+
+void loop(){
+  int distance;
+  distance=get_distance();
+  if (distance>3){
+    motor_forward();
+  }else{
+    motor_turn_left();
+  }
+  
+}
